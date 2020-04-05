@@ -32,3 +32,16 @@
   position: relative;
   background-color: rgba(0,0,0,0.2);
 }
+
+
+@media (max-width: 900px) {
+  .display-mobile{
+    display: block;
+  }
+}
+
+@media (min-width: 901px) {
+  .display-mobile{
+    display: none
+  }  
+}
