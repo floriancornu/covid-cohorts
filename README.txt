@@ -13,6 +13,8 @@ Parse attributes
 
 
 # Todo:
+## Columns
+... Resolutions
 
 ## Footers:
 ... total cases
@@ -25,6 +27,10 @@ Parse attributes
 ... Flex for full size table
 
 ## list of cases on cohort click
+
+
+## more charts
+... days to resolve (80%) cases by age
 
 
 ## Get a stable Token for data load

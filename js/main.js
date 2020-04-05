@@ -59,6 +59,7 @@ covid_cohort_app.prepareAnalyseAttributes = function(){
   covid_cohort_app.attributes.push( 'Gender' )
   covid_cohort_app.attributes.push( 'Nationalit' )
   covid_cohort_app.attributes.push( 'Status' )
+  covid_cohort_app.attributes.push( 'Current_Lo' )
 
   covid_cohort_app.params = {}
   covid_cohort_app.attributes.forEach( function( oneAttr ){
@@ -88,7 +89,7 @@ covid_cohort_app.read_cases = function(){
 }
 
 
-covid_cohort_app.relativeDays = []
+// covid_cohort_app.relativeDays = []
 covid_cohort_app.readOneCase = function( oneCase ){
 
   // Shorthand access
@@ -122,7 +123,8 @@ covid_cohort_app.readOneCase = function( oneCase ){
     cohort: parsedAttributes.caseCohort,
     count: 0,
     Discharged: 0,
-    Deceased: 0
+    Deceased: 0,
+    resolved: 0
   }
 
   covid_cohort_app.cohorts[ parsedAttributes.caseCohort ].count ++
@@ -133,6 +135,12 @@ covid_cohort_app.readOneCase = function( oneCase ){
   // Counting
   covid_cohort_app.cohorts[ parsedAttributes.caseCohort ][ parsedAttributes.caseStatus ] = covid_cohort_app.cohorts[ parsedAttributes.caseCohort ][ parsedAttributes.caseStatus ] || 0
   covid_cohort_app.cohorts[ parsedAttributes.caseCohort ][ parsedAttributes.caseStatus ] ++
+
+  // A case is resolved when discharged or deceased
+  if( [ 'Discharged', 'Deceased' ].includes( parsedAttributes.caseStatus ) ){
+    covid_cohort_app.cohorts[ parsedAttributes.caseCohort ].resolved ++
+    parsedAttributes.isResolved = true
+  }
 
   // Parse Discharged date (or death)
   if( parsedAttributes.Date_of_Di !== null ){
@@ -149,11 +157,11 @@ covid_cohort_app.readOneCase = function( oneCase ){
    } )
 
 
-   if( Number.isFinite( parsedAttributes.caseDischargeAfterDays ) ){
-    if( !covid_cohort_app.relativeDays.includes( parsedAttributes.caseDischargeAfterDays ) ){
-      covid_cohort_app.relativeDays.push( parsedAttributes.caseDischargeAfterDays )
-    }
-  }
+  // if( Number.isFinite( parsedAttributes.caseDischargeAfterDays ) ){
+  //   if( !covid_cohort_app.relativeDays.includes( parsedAttributes.caseDischargeAfterDays ) ){
+  //     covid_cohort_app.relativeDays.push( parsedAttributes.caseDischargeAfterDays )
+  //   }
+  // }
 }
 
 
@@ -166,7 +174,6 @@ covid_cohort_app.isCaseWithinFilter = function( caseAttributes ){
     return oneChoice.id === genderFilterId
   } )
   let isGenderPassing = genderFilterValue.values.includes( caseAttributes.Gender )
-  
 
   // Test Age
   let ageFilterId = covid_cohort_app.options.age
@@ -185,9 +192,12 @@ covid_cohort_app.cohortCalculations = function(){
   covid_cohort_app.maxDailyCases = false
   Object.values( covid_cohort_app.cohorts ).forEach( function( oneCohort ){
     oneCohort.pctDischarged = 100 * oneCohort.Discharged / oneCohort.count
+    oneCohort.pctDeceased = 100 * oneCohort.Deceased / oneCohort.count
+    oneCohort.pctHospitalised = 100 * oneCohort.Hospitalised / oneCohort.count
 
     oneCohort.cohortAge = moment().diff( moment( oneCohort.cohort, 'YYYY-MM-DD'), 'days' )
 
+    // Track max daily case for cohort coloring
     if( !covid_cohort_app.maxDailyCases || covid_cohort_app.maxDailyCases < oneCohort.count ){
       covid_cohort_app.maxDailyCases = oneCohort.count
     }
@@ -199,24 +209,32 @@ covid_cohort_app.cohortCalculations = function(){
 covid_cohort_app.setGridRows = function(){
   covid_cohort_app.gridOptions.api.setRowData( Object.values( covid_cohort_app.cohorts ) )
 
+  covid_cohort_app.calculateTotals()
   covid_cohort_app.gridOptions.api.setPinnedBottomRowData( [
     {
-      id: 'Total'
+      id: 'Total',
+      totalsToShow: [ 'count', 'resolved', 'Discharged', 'Deceased', 'Hospitalised' ],
+      pctDenominator: 'count'
+
     },
     {
-      id: 'Resolved'
-    },
-    {
-      id: 'Ongoing'
+      id: 'Resolved',
+      totalsToShow: [ 'resolved', 'Discharged', 'Deceased' ],
+      pctDenominator: 'resolved'
     }
   ] )
 }
+
+
+
+
 
 
 covid_cohort_app.setGridOptions = function(){
   let gridOptions = {}
 
   gridOptions.suppressPropertyNamesCheck = true
+  gridOptions.suppressMenuHide = true
   gridOptions.rowData = []
   
   
@@ -232,7 +250,7 @@ covid_cohort_app.setGridOptions = function(){
     sortable: true,
     resizable: true,
     filter: true,
-    suppressMovable: true
+    suppressMovable: true,
   }
 
   return gridOptions
@@ -240,13 +258,18 @@ covid_cohort_app.setGridOptions = function(){
 
 covid_cohort_app.setColDefs = function(){
   let colDefs = []
-  colDefs.push(
+
+  let cohortColDefGroup = {
+    headerName: 'Cohort',
+    children: []
+  }
+
+  cohortColDefGroup.children.push(
     {
-      headerName: 'Confirmation Date',
-      width: 150,
+      headerName: 'Confirmed on',
+      width: 120,
       pinned: 'left',
       valueGetter: function( params ){
-        console.log( params )
         if( params.node.rowPinned ){
           return params.data.id
         }else{
@@ -255,103 +278,154 @@ covid_cohort_app.setColDefs = function(){
       }
     }
   )
-  colDefs.push(
+  cohortColDefGroup.children.push(
     {
-      headerName: 'Cohort Age',
+      headerName: 'Age',
       field: 'cohortAge',
-      width: 110,
+      width: 70,
       pinned: 'left',
       type: ['numericColumn']
     }
   )
-  colDefs.push(
+  cohortColDefGroup.children.push(
     {
       headerName: 'Cases',
       width: 80,
       pinned: 'left',
       type: ['numericColumn'],
+      app: {
+        property: 'count'
+      },
+      valueGetter: covid_cohort_app.cohortTotalValueGetter,
+      valueFormatter: covid_cohort_app.cohortTotalFormatter,
+      cellClass: covid_cohort_app.cohortTotalCellClass,
       cellStyle: function( params ){
         // Orange gradient
         let backgroundColor = 'rgba(214,202,89,' + params.data.count/covid_cohort_app.maxDailyCases + ')'
         return { backgroundColor }
-      },
-      valueGetter: function( params ){
-        if( params.node.rowPinned ){
-          return 'soon'
-        }else{
-          return params.data.count
-        }
       }
     }
   )
-  colDefs.push(
+  colDefs.push( cohortColDefGroup )
+
+
+  let dischargedColDefs = {
+    headerName: 'Discharged',
+    children: []
+  }
+  dischargedColDefs.children.push(
     {
-      headerName: 'Discharged',
-      width: 120,
+      headerName: 'Cases',
+      width: 80,
       pinned: 'left',
       type: ['numericColumn'],
-      cellClass: function( params ){
-        let classes = [ 'align-right']
-        classes.push( covid_cohort_app.applyNumberStyle( params.value ) )
-        return classes
+      app: {
+        property: 'Discharged'
       },
-      valueGetter: function( params ){
-        if( params.node.rowPinned ){
-          return 'soon'
-        }else{
-          return params.data.Discharged
-        }
-      }
+      valueGetter: covid_cohort_app.cohortTotalValueGetter,
+      valueFormatter: covid_cohort_app.cohortTotalFormatter,
+      cellClass: covid_cohort_app.cohortTotalCellClass
     }
   )
-  colDefs.push(
+  dischargedColDefs.children.push(
     {
-      headerName: '% Discharged',
-      width: 90,
+      headerName: '%',
+      width: 70,
       pinned: 'left',
       type: ['numericColumn'],
-      valueGetter: function( params ){
-        if( params.node.rowPinned ){
-          return 'soon'
-        }else{
-          return params.data.pctDischarged
-        }
+      app: {
+        property: 'Discharged'
       },
-      valueFormatter: function( params ){
-        return covid_cohort_app.formatPct( params.value )
-      },
-      cellClass: function( params ){
-        let classes = [ 'align-right']
-        classes.push( covid_cohort_app.applyNumberStyle( params.value ) )
-        return classes
-      },
+      valueGetter: covid_cohort_app.cohortTotalPctValueGetter,
+      valueFormatter: covid_cohort_app.cohortTotalPctFormatter,
+      cellClass: covid_cohort_app.cohortTotalCellClass,
       cellStyle: function( params ){
         return covid_cohort_app.applyCohortBackground( params.value )
       }
     }
   )
+  colDefs.push( dischargedColDefs )
 
-  colDefs.push(
+
+  let deceasedColDefs = {
+    headerName: 'Deceased',
+    children: []
+  }
+  deceasedColDefs.children.push(
     {
-      headerName: 'Deceased',
-      field: 'Deceased',
-      width: 100,
+      headerName: 'Cases',
+      width: 80,
       pinned: 'left',
       type: ['numericColumn'],
-      cellClass: function( params ){
-        let classes = [ 'align-right']
-        classes.push( covid_cohort_app.applyNumberStyle( params.value ) )
-        return classes
+      app: {
+        property: 'Deceased'
       },
+      valueGetter: covid_cohort_app.cohortTotalValueGetter,
+      valueFormatter: covid_cohort_app.cohortTotalFormatter,
+      cellClass: covid_cohort_app.cohortTotalCellClass
     }
   )
+  deceasedColDefs.children.push(
+    {
+      headerName: '%',
+      width: 70,
+      pinned: 'left',
+      type: ['numericColumn'],
+      app: {
+        property: 'Deceased'
+      },
+      valueGetter: covid_cohort_app.cohortTotalPctValueGetter,
+      valueFormatter: covid_cohort_app.cohortTotalPctFormatter,
+      cellClass: covid_cohort_app.cohortTotalCellClass,
+    }
+  )
+  colDefs.push( deceasedColDefs )
+
+  let hospitalisedColDefs = {
+    headerName: 'Hospitalised',
+    children: []
+  }
+  hospitalisedColDefs.children.push(
+    {
+      headerName: 'Cases',
+      width: 80,
+      pinned: 'left',
+      type: ['numericColumn'],
+      app: {
+        property: 'Hospitalised'
+      },
+      valueGetter: covid_cohort_app.cohortTotalValueGetter,
+      valueFormatter: covid_cohort_app.cohortTotalFormatter,
+      cellClass: covid_cohort_app.cohortTotalCellClass
+    }
+  )
+  hospitalisedColDefs.children.push(
+    {
+      headerName: '%',
+      width: 70,
+      pinned: 'left',
+      type: ['numericColumn'],
+      app: {
+        property: 'Hospitalised'
+      },
+      valueGetter: covid_cohort_app.cohortTotalPctValueGetter,
+      valueFormatter: covid_cohort_app.cohortTotalPctFormatter,
+      cellClass: covid_cohort_app.cohortTotalCellClass,
+    }
+  )
+  colDefs.push( hospitalisedColDefs )
 
   // Relative Days columns
   let maxRelativeDay = covid_cohort_app.findMaxRelativeDay()
   let oneRelativeDay = 1
 
+  let cohortDaysColDefs = {
+    headerName: 'Days after confirmation',
+    children: []
+  }
+
   while( oneRelativeDay <= maxRelativeDay ){
-    colDefs.push(
+    cohortDaysColDefs.children.push(
       {
         headerName: 'D+' + oneRelativeDay,
         width: 80,
@@ -361,6 +435,9 @@ covid_cohort_app.setColDefs = function(){
         },
         valueGetter: function( params ){
           // console.log( params )
+          if( params.node.rowPinned ){
+            return false
+          }
           let cohortDischargedCasesToDate = 0
           let columnRelativeDays = params.colDef.app.relativeDays
 
@@ -414,6 +491,8 @@ covid_cohort_app.setColDefs = function(){
     )
     oneRelativeDay ++
   }
+
+  colDefs.push( cohortDaysColDefs )
 
   return colDefs
 }
