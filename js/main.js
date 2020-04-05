@@ -13,6 +13,8 @@ covid_cohort_app.data_url = 'https://floriancornu.github.io/covid-cohorts/data/2
 covid_cohort_app.tableValues = 'pct'
 // covid_cohort_app.tableValues = 'number'
 
+covid_cohort_app.tableInterval = 3
+
 
 // Starting options
 covid_cohort_app.options = {
@@ -547,9 +549,7 @@ covid_cohort_app.setColDefs = function(){
         }
       }
     )
-    // 
-    // oneRelativeDay ++ // Daily
-    oneRelativeDay += 3 // Weekly
+    oneRelativeDay += covid_cohort_app.tableInterval
   }
 
   colDefs.push( cohortDaysColDefs )
