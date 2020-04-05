@@ -1,6 +1,5 @@
 
 var covid_cohort_app = covid_cohort_app || {}
-console.log( 'helpers' )
 
 
 covid_cohort_app.formatPct = function( value, numberDecimals = 0 ){
