@@ -138,6 +138,7 @@ covid_cohort_app.readOneCase = function( oneCase ){
 
   // A case is resolved when discharged or deceased
   if( [ 'Discharged', 'Deceased' ].includes( parsedAttributes.caseStatus ) ){
+    let caseStatus
     covid_cohort_app.cohorts[ parsedAttributes.caseCohort ].resolved ++
     parsedAttributes.isResolved = true
   }
@@ -234,7 +235,7 @@ covid_cohort_app.setGridOptions = function(){
   let gridOptions = {}
 
   gridOptions.suppressPropertyNamesCheck = true
-  gridOptions.suppressMenuHide = true
+  gridOptions.suppressMenuHide = false
   gridOptions.rowData = []
   
   
@@ -251,6 +252,17 @@ covid_cohort_app.setGridOptions = function(){
     resizable: true,
     filter: true,
     suppressMovable: true,
+    suppressMenu: true
+  }
+
+  // Style footer rows
+  gridOptions.getRowClass = function( params ){
+    let classes = []
+    console.log( params )
+    if( params.node.rowPinned ){
+      classes.push( 'footer' )
+    }
+    return classes
   }
 
   return gridOptions
@@ -266,8 +278,18 @@ covid_cohort_app.setColDefs = function(){
 
   cohortColDefGroup.children.push(
     {
+      headerName: 'Days Ago',
+      field: 'cohortAge',
+      width: 80,
+      pinned: 'left',
+      type: ['numericColumn'],
+      suppressMenu: true
+    }
+  )
+  cohortColDefGroup.children.push(
+    {
       headerName: 'Confirmed on',
-      width: 120,
+      width: 110,
       pinned: 'left',
       valueGetter: function( params ){
         if( params.node.rowPinned ){
@@ -278,15 +300,7 @@ covid_cohort_app.setColDefs = function(){
       }
     }
   )
-  cohortColDefGroup.children.push(
-    {
-      headerName: 'Age',
-      field: 'cohortAge',
-      width: 70,
-      pinned: 'left',
-      type: ['numericColumn']
-    }
-  )
+  
   cohortColDefGroup.children.push(
     {
       headerName: 'Cases',
@@ -381,8 +395,46 @@ covid_cohort_app.setColDefs = function(){
   )
   colDefs.push( deceasedColDefs )
 
+
+  let resolvedColDefs = {
+    headerName: 'Total Resolved',
+    children: []
+  }
+  resolvedColDefs.children.push(
+    {
+      headerName: 'Cases',
+      width: 80,
+      pinned: 'left',
+      type: ['numericColumn'],
+      app: {
+        property: 'resolved'
+      },
+      valueGetter: covid_cohort_app.cohortTotalValueGetter,
+      valueFormatter: covid_cohort_app.cohortTotalFormatter,
+      cellClass: covid_cohort_app.cohortTotalCellClass
+    }
+  )
+  resolvedColDefs.children.push(
+    {
+      headerName: '%',
+      width: 70,
+      pinned: 'left',
+      type: ['numericColumn'],
+      app: {
+        property: 'resolved'
+      },
+      valueGetter: covid_cohort_app.cohortTotalPctValueGetter,
+      valueFormatter: covid_cohort_app.cohortTotalPctFormatter,
+      cellClass: covid_cohort_app.cohortTotalCellClass,
+    }
+  )
+  colDefs.push( resolvedColDefs )
+
+
+
+
   let hospitalisedColDefs = {
-    headerName: 'Hospitalised',
+    headerName: 'Still Hospitalised',
     children: []
   }
   hospitalisedColDefs.children.push(
@@ -428,7 +480,7 @@ covid_cohort_app.setColDefs = function(){
     cohortDaysColDefs.children.push(
       {
         headerName: 'D+' + oneRelativeDay,
-        width: 80,
+        width: 60,
         type: ['numericColumn'],
         app: {
           relativeDays: oneRelativeDay

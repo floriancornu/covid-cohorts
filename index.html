@@ -36,8 +36,8 @@
   <!-- Add your site or application content here -->
   <div class="container-fluid">
     <h1>Singapore Covid19 Cohorts</h1>
-    <p>Resources: <a href='https://www.gov.sg/features/covid-19' target='_blank'>www.gov.sg</a> | <a href='https://www.moh.gov.sg' target='_blank'>MOH Ministry of Health</a> | <a href='https://experience.arcgis.com/experience/7e30edc490a5441a874f9efe67bd8b89' target='_blank'>Data</a></p>
-    <p>The table shows outcomes by confirmation date cohorts. eg. Cases discharged a certain number of days after cases are confirmed. ie. How fast the cohort recovers.</p>
+    <p>Resources: <a href='https://www.gov.sg/features/covid-19' target='_blank'>www.gov.sg</a> | <a href='https://www.moh.gov.sg' target='_blank'>MOH Ministry of Health</a> | <a href='https://experience.arcgis.com/experience/7e30edc490a5441a874f9efe67bd8b89' target='_blank'>Data</a> | Cases in isolation are not identified (no data available).</p>
+    <p>The table shows outcomes by cohort of confirmation. eg. Cases discharged a certain number of days following their confirmation.</p>
 
     <div class="row">
       <div class="col">
@@ -48,7 +48,13 @@
       </div>
     </div>
 
-    <div id="cohortGrid" style="height: 900px" class="ag-theme-balham"></div>
+    <div class="flex-box">
+      <div class="flex-height">
+        <div id="cohortGrid" class="ag-theme-balham"></div>
+      </div>
+    </div>
+
+    <!-- <div id="cohortGrid" style="height: 900px" class="ag-theme-balham"></div> -->
       <!-- <div id="cohortGrid" style="height: 700px; width:1080px;" class="ag-theme-balham"></div> -->
   </div>
 
