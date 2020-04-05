@@ -156,14 +156,14 @@ covid_cohort_app.optionChoices = {
       values: [0,29]
     }
     ,{ 
-      id: '30-50',
-      label: '30-49y old',
-      values: [30,49]
+      id: '30-59',
+      label: '30-59y old',
+      values: [30,59]
     }
     ,{ 
-      id: '50+',
-      label: '>50y old',
-      values: [50,999]
+      id: '60+',
+      label: '>60y old',
+      values: [60,999]
     }
     ,{ 
       id: 'all',
