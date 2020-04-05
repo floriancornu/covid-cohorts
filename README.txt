@@ -13,12 +13,6 @@ Parse attributes
 
 
 # Todo:
-## Filters:
-by Age: <30y, 30-49, 50+
-by Gender: F, M, Both
-DONE... show options in HTML
-DONE...listen to Button clicks
-.. update grid on choice
 
 ## Footers:
 ... total cases

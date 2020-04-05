@@ -1,7 +1,12 @@
 
 var covid_cohort_app = covid_cohort_app || {}
 
+
+// Live file - Issue: needs a token? not sure how to get it for daily refresh
 covid_cohort_app.data_url = 'https://services6.arcgis.com/LZwBmoXba0zrRap7/arcgis/rest/services/COVID_19_Prod_B_feature/FeatureServer/0/query?f=json&where=1%3D1&returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=*&orderByFields=Case_ID%20desc&resultOffset=0&resultRecordCount=2000&cacheHint=true'
+
+// Using stored data
+covid_cohort_app.data_url = 'https://floriancornu.github.io/covid-cohorts/data/20200404covid.txt'
 
 
 // Pick the kind of numbers to show
@@ -9,61 +14,30 @@ covid_cohort_app.tableValues = 'pct'
 // covid_cohort_app.tableValues = 'number'
 
 
-covid_cohort_app.optionChoices = {
-  age: [
-    { 
-      id: '0to30',
-      label: '<30y old',
-      values: [0,29]
-    }
-    ,{ 
-      id: '30-50',
-      label: '30-49y old',
-      values: [30,49]
-    }
-    ,{ 
-      id: '50+',
-      label: '>50y old',
-      values: [50,999]
-    }
-    ,{ 
-      id: 'all',
-      label: 'Any Age',
-      values: [0,999]
-    }
-  ],
-  gender: [
-    {
-      id: 'm',
-      label: 'Male',
-      values: ['M']
-    },
-    {
-      id: 'f',
-      label: 'Female',
-      values: ['F']
-    },
-    {
-      id: 'all',
-      label: 'All',
-      values: ['F', 'M']
-    }
-  ]
-}
-
-
+// Starting options
 covid_cohort_app.options = {
   gender: 'all',
-  age: '50+'
+  age: 'all'
 }
 
 // Load Data
-console.log( covid_cohort_app.data_url )
-d3.json(covid_cohort_app.data_url).then( function(data) {
-  console.log( 'ok')
-  console.log(data);
-  covid_cohort_app.read_cases( data.features)
-});
+covid_cohort_app.readData = function(){
+  console.log( covid_cohort_app.data_url )
+
+  let readingPromise = new Promise( function( resolve, reject ){
+    d3.json(covid_cohort_app.data_url).then( function(data) {
+      console.log( 'file data', data )
+
+      covid_cohort_app.originData = data.features
+
+      resolve( true )
+    })
+  } )
+
+  return readingPromise
+}
+
+
 
 // Date_of_Co
 // Date_of_Di
@@ -74,10 +48,6 @@ d3.json(covid_cohort_app.data_url).then( function(data) {
 // Nationalit
 // Status
 // Death?
-
-covid_cohort_app.params = {}
-covid_cohort_app.cohorts = {}
-
 
 covid_cohort_app.prepareAnalyseAttributes = function(){
   covid_cohort_app.attributes = []
@@ -90,14 +60,18 @@ covid_cohort_app.prepareAnalyseAttributes = function(){
   covid_cohort_app.attributes.push( 'Nationalit' )
   covid_cohort_app.attributes.push( 'Status' )
 
+  covid_cohort_app.params = {}
   covid_cohort_app.attributes.forEach( function( oneAttr ){
     covid_cohort_app.params[ oneAttr ] = []
   } )
 }
 
 
-covid_cohort_app.read_cases = function( cases_data ){
-  
+covid_cohort_app.read_cases = function(){
+  covid_cohort_app.cohorts = {}
+  covid_cohort_app.cases = []
+
+  cases_data = covid_cohort_app.originData
   covid_cohort_app.prepareAnalyseAttributes()
 
   // Read each cases
@@ -109,12 +83,11 @@ covid_cohort_app.read_cases = function( cases_data ){
   console.log( 'covid_cohort_app.cohorts', covid_cohort_app.cohorts )
   console.log( 'covid_cohort_app.cases', covid_cohort_app.cases )
   covid_cohort_app.cohortCalculations()
-  covid_cohort_app.launchGrid()
+
+  covid_cohort_app.setGridRows()
 }
 
 
-
-covid_cohort_app.cases = []
 covid_cohort_app.relativeDays = []
 covid_cohort_app.readOneCase = function( oneCase ){
 
@@ -132,9 +105,11 @@ covid_cohort_app.readOneCase = function( oneCase ){
     parsedAttributes[ oneAttr ] = caseAttr
 
     if( oneAttr === 'Date_of_Co' ){
-      caseAttr = moment( caseAttr ).format( 'YYYY-MM-DD' )
-      parsedAttributes.caseCohortMoment = moment( caseAttr )
-      parsedAttributes.caseCohort = parsedAttributes.caseCohortMoment.format( 'YYYY-MM-DD' )
+      let cohort = covid_cohort_app.readCaseCohort( caseAttributes )
+
+      caseAttr = cohort.caseCohort
+      parsedAttributes.caseCohort = cohort.caseCohort
+      parsedAttributes.caseCohortMoment = cohort.caseCohortMoment
     }
 
     // Record potential values for attribute
@@ -183,7 +158,7 @@ covid_cohort_app.readOneCase = function( oneCase ){
 
 
 covid_cohort_app.isCaseWithinFilter = function( caseAttributes ){
-  console.log( caseAttributes )
+  // console.log( caseAttributes )
 
   // Test Gender
   let genderFilterId = covid_cohort_app.options.gender
@@ -220,11 +195,19 @@ covid_cohort_app.cohortCalculations = function(){
 }
 
 
+
+covid_cohort_app.setGridRows = function(){
+  covid_cohort_app.gridOptions.api.setRowData( Object.values( covid_cohort_app.cohorts ) )
+}
+
+
 covid_cohort_app.setGridOptions = function(){
   let gridOptions = {}
 
   gridOptions.suppressPropertyNamesCheck = true
-  gridOptions.rowData = Object.values( covid_cohort_app.cohorts )
+  gridOptions.rowData = []
+  
+  
   gridOptions.columnDefs = covid_cohort_app.setColDefs()
 
   gridOptions.enableRangeSelection = true
@@ -329,14 +312,7 @@ covid_cohort_app.setColDefs = function(){
   )
 
   // Relative Days columns
-  // covid_cohort_app.relativeDays.sort( function(a,b){return a-b})
-  let maxRelativeDay = false
-  covid_cohort_app.relativeDays.forEach( function( oneRelativeDay ){
-    if( maxRelativeDay === false || maxRelativeDay < oneRelativeDay ){
-      maxRelativeDay = oneRelativeDay
-    }
-  } )
-
+  let maxRelativeDay = covid_cohort_app.findMaxRelativeDay()
   let oneRelativeDay = 1
 
   while( oneRelativeDay <= maxRelativeDay ){
@@ -408,13 +384,3 @@ covid_cohort_app.setColDefs = function(){
 }
 
 
-
-covid_cohort_app.launchGrid = function(){
-  covid_cohort_app.setGridOptions()
-
-  // lookup the container we want the Grid to use
-  var eGridDiv = document.querySelector('#cohortGrid')
-
-  // create the grid passing in the div to use together with the columns & data we want to use
-  new agGrid.Grid(eGridDiv, covid_cohort_app.setGridOptions() )
-}
