@@ -16,7 +16,8 @@ Parse attributes
 ## Filters:
 by Age: <30y, 30-49, 50+
 by Gender: F, M, Both
-... show options in HTML
+DONE... show options in HTML
+DONE...listen to Button clicks
 .. update grid on choice
 
 ## Footers:
@@ -30,3 +31,6 @@ by Gender: F, M, Both
 ... Flex for full size table
 
 ## list of cases on cohort click
+
+
+## Get a stable Token for data load
