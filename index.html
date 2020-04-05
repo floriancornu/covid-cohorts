@@ -1,0 +1,77 @@
+<!doctype html>
+<html class="no-js" lang="">
+
+<head>
+  <meta charset="utf-8">
+  <title>Singapore Covid19 Dashboard</title>
+  <meta name="description" content="">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link rel="manifest" href="site.webmanifest">
+  <link rel="apple-touch-icon" href="icon.png">
+  <!-- Place favicon.ico in the root directory -->
+
+  <link rel="stylesheet" href="css/normalize.css">
+
+  <!-- Bootstrap for styling -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+  <!-- AgGrid -->
+  <script src="https://unpkg.com/ag-grid-community/dist/ag-grid-community.min.noStyle.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/ag-grid-community/dist/styles/ag-grid.css">
+  <link rel="stylesheet" href="https://unpkg.com/ag-grid-community/dist/styles/ag-theme-balham.css">
+
+  <!-- App styles -->
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/app.css">
+
+  <meta name="theme-color" content="#fafafa">
+</head>
+
+<body>
+  <!--[if IE]>
+    <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience and security.</p>
+  <![endif]-->
+
+  <!-- Add your site or application content here -->
+  <div class="container-fluid">
+    <h1>Singapore Covid19 Cohorts: Resolution of Cases by Cohort (confirmation date)</h1>
+    <p>Resources: <a href='https://www.gov.sg/features/covid-19' target='_blank'>www.gov.sg</a>. <a href='https://www.moh.gov.sg' target='_blank'>MOH Ministry of Health</a>. <a href='https://experience.arcgis.com/experience/7e30edc490a5441a874f9efe67bd8b89' target='_blank'>Data</a></p>
+    <p>The table shows outcomes by confirmation date cohorts. eg. Cases discharged a certain number of days after cases are confirmed. ie. How fast the cohort recovers.</p>
+    <div id="cohortGrid" style="height: 900px" class="ag-theme-balham"></div>
+    <!-- <div id="cohortGrid" style="height: 700px; width:1080px;" class="ag-theme-balham"></div> -->
+  </div>
+
+
+  <!-- End of Site -->
+
+
+  <!-- JS -->
+  <script src="js/vendor/modernizr-3.8.0.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+  <script>window.jQuery || document.write('<script src="js/vendor/jquery-3.4.1.min.js"><\/script>')</script>
+
+  <!-- Load D3 -->
+  <script src="https://d3js.org/d3.v5.min.js"></script>
+
+  <!-- MomentJS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
+
+  <!-- AccountingJS for number formatting -->
+  <script src="js/vendor/accounting.min.js"></script>
+
+
+  <!-- App JS -->
+  <script src="js/plugins.js"></script>
+  <script src="js/helpers.js"></script>
+  <script src="js/main.js"></script>
+
+  <!-- Google Analytics: change UA-XXXXX-Y to be your site's ID. -->
+  <script>
+    window.ga = function () { ga.q.push(arguments) }; ga.q = []; ga.l = +new Date;
+    ga('create', 'UA-XXXXX-Y', 'auto'); ga('set','transport','beacon'); ga('send', 'pageview')
+  </script>
+  <script src="https://www.google-analytics.com/analytics.js" async></script>
+</body>
+
+</html>
