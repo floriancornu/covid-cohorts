@@ -39,3 +39,5 @@ Parse attributes
 
 # Other websites
 https://medium.com/@tomaspueyo/coronavirus-act-today-or-people-will-die-f4d3d9cd99ca
+
+https://en.wikipedia.org/wiki/2020_coronavirus_pandemic_in_Singapore

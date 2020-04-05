@@ -258,7 +258,7 @@ covid_cohort_app.setGridOptions = function(){
   // Style footer rows
   gridOptions.getRowClass = function( params ){
     let classes = []
-    console.log( params )
+    // console.log( params )
     if( params.node.rowPinned ){
       classes.push( 'footer' )
     }
@@ -371,6 +371,7 @@ covid_cohort_app.setColDefs = function(){
       width: 80,
       pinned: 'left',
       type: ['numericColumn'],
+      // hide: true,
       app: {
         property: 'Deceased'
       },
@@ -385,6 +386,7 @@ covid_cohort_app.setColDefs = function(){
       width: 70,
       pinned: 'left',
       type: ['numericColumn'],
+      // hide: true,
       app: {
         property: 'Deceased'
       },
@@ -406,6 +408,7 @@ covid_cohort_app.setColDefs = function(){
       width: 80,
       pinned: 'left',
       type: ['numericColumn'],
+      // hide: true,
       app: {
         property: 'resolved'
       },
@@ -420,6 +423,7 @@ covid_cohort_app.setColDefs = function(){
       width: 70,
       pinned: 'left',
       type: ['numericColumn'],
+      // hide: true,
       app: {
         property: 'resolved'
       },
@@ -443,6 +447,7 @@ covid_cohort_app.setColDefs = function(){
       width: 80,
       pinned: 'left',
       type: ['numericColumn'],
+      // hide: true,
       app: {
         property: 'Hospitalised'
       },
@@ -457,6 +462,7 @@ covid_cohort_app.setColDefs = function(){
       width: 70,
       pinned: 'left',
       type: ['numericColumn'],
+      // hide: true,
       app: {
         property: 'Hospitalised'
       },
@@ -469,10 +475,10 @@ covid_cohort_app.setColDefs = function(){
 
   // Relative Days columns
   let maxRelativeDay = covid_cohort_app.findMaxRelativeDay()
-  let oneRelativeDay = 1
+  let oneRelativeDay = 0
 
   let cohortDaysColDefs = {
-    headerName: 'Days after confirmation',
+    headerName: 'Discharged, x Days after confirmation',
     children: []
   }
 
@@ -541,7 +547,9 @@ covid_cohort_app.setColDefs = function(){
         }
       }
     )
-    oneRelativeDay ++
+    // 
+    // oneRelativeDay ++ // Daily
+    oneRelativeDay += 3 // Weekly
   }
 
   colDefs.push( cohortDaysColDefs )
