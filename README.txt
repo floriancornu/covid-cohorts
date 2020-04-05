@@ -5,21 +5,8 @@ Insights:
 .. cohorts 20+ days are small with <20 people in each: outcomes might not be significant
 
 
-Parse attributes
-.. Date_of_Co: timestamp
-.. Date_of_Di: momentJS
-.. Gender: M, F
-
-
 
 # Todo:
-## Columns
-... Resolutions
-
-## Footers:
-... total cases
-... total dischared
-... total death
 
 ## Cohort Lines
 
@@ -35,6 +22,9 @@ Parse attributes
 
 ## Get a stable Token for data load
 
+## Identify the isolated cases so they can be marked as resolved
+
+## find granular data in other countries
 
 
 # Other websites
