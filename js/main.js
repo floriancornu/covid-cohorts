@@ -198,6 +198,18 @@ covid_cohort_app.cohortCalculations = function(){
 
 covid_cohort_app.setGridRows = function(){
   covid_cohort_app.gridOptions.api.setRowData( Object.values( covid_cohort_app.cohorts ) )
+
+  covid_cohort_app.gridOptions.api.setPinnedBottomRowData( [
+    {
+      id: 'Total'
+    },
+    {
+      id: 'Resolved'
+    },
+    {
+      id: 'Ongoing'
+    }
+  ] )
 }
 
 
@@ -231,9 +243,16 @@ covid_cohort_app.setColDefs = function(){
   colDefs.push(
     {
       headerName: 'Confirmation Date',
-      field: 'cohort',
       width: 150,
-      pinned: 'left'
+      pinned: 'left',
+      valueGetter: function( params ){
+        console.log( params )
+        if( params.node.rowPinned ){
+          return params.data.id
+        }else{
+          return params.data.cohort
+        }
+      }
     }
   )
   colDefs.push(
@@ -248,7 +267,6 @@ covid_cohort_app.setColDefs = function(){
   colDefs.push(
     {
       headerName: 'Cases',
-      field: 'count',
       width: 80,
       pinned: 'left',
       type: ['numericColumn'],
@@ -256,13 +274,19 @@ covid_cohort_app.setColDefs = function(){
         // Orange gradient
         let backgroundColor = 'rgba(214,202,89,' + params.data.count/covid_cohort_app.maxDailyCases + ')'
         return { backgroundColor }
+      },
+      valueGetter: function( params ){
+        if( params.node.rowPinned ){
+          return 'soon'
+        }else{
+          return params.data.count
+        }
       }
     }
   )
   colDefs.push(
     {
       headerName: 'Discharged',
-      field: 'Discharged',
       width: 120,
       pinned: 'left',
       type: ['numericColumn'],
@@ -270,6 +294,13 @@ covid_cohort_app.setColDefs = function(){
         let classes = [ 'align-right']
         classes.push( covid_cohort_app.applyNumberStyle( params.value ) )
         return classes
+      },
+      valueGetter: function( params ){
+        if( params.node.rowPinned ){
+          return 'soon'
+        }else{
+          return params.data.Discharged
+        }
       }
     }
   )
@@ -280,7 +311,11 @@ covid_cohort_app.setColDefs = function(){
       pinned: 'left',
       type: ['numericColumn'],
       valueGetter: function( params ){
-        return params.data.pctDischarged
+        if( params.node.rowPinned ){
+          return 'soon'
+        }else{
+          return params.data.pctDischarged
+        }
       },
       valueFormatter: function( params ){
         return covid_cohort_app.formatPct( params.value )
