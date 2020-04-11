@@ -8,6 +8,9 @@ Insights:
 
 # Todo:
 
+## Evaluate date of discharge by comparing data file from 1 day to another
+
+
 ## Cohort Lines
 
 ## Layout

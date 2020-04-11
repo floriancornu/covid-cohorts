@@ -6,10 +6,9 @@ var covid_cohort_app = covid_cohort_app || {}
 covid_cohort_app.data_url = 'https://services6.arcgis.com/LZwBmoXba0zrRap7/arcgis/rest/services/COVID_19_Prod_B_feature/FeatureServer/0/query?f=json&where=1%3D1&returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=*&orderByFields=Case_ID%20desc&resultOffset=0&resultRecordCount=2000&cacheHint=true'
 
 // Using stored data
-covid_cohort_app.data_url = 'https://floriancornu.github.io/covid-cohorts/data/20200404covid.txt' // Apr 4th
-covid_cohort_app.data_url = 'https://floriancornu.github.io/covid-cohorts/data/20200406-0738.txt' // Found April 6th
-
-covid_cohort_app.data_url = 'https://floriancornu.github.io/covid-cohorts/data/20200411@0907.txt' // Found April 6th
+covid_cohort_app.data_url = 'https://floriancornu.github.io/covid-cohorts/data/20200404@2055.txt' // include dates of discharge
+// covid_cohort_app.data_url = 'https://floriancornu.github.io/covid-cohorts/data/20200406@0738.txt' // no date of discharge anymore
+covid_cohort_app.data_url = 'https://floriancornu.github.io/covid-cohorts/data/20200411@0907.txt' //
 
 
 // Pick the kind of numbers to show
@@ -88,6 +87,13 @@ covid_cohort_app.read_cases = function(){
   console.log( 'covid_cohort_app.params', covid_cohort_app.params )
   console.log( 'covid_cohort_app.cohorts', covid_cohort_app.cohorts )
   console.log( 'covid_cohort_app.cases', covid_cohort_app.cases )
+
+  // Check that discharged dates are available
+  if( covid_cohort_app.params[ 'Date_of_Di' ].length <= 1 ){
+    console.warn( 'Date of discharge are not available. Cohort table calculations will not work' )
+  }
+
+
   covid_cohort_app.cohortCalculations()
 
   covid_cohort_app.setGridRows()
@@ -501,33 +507,7 @@ covid_cohort_app.setColDefs = function(){
           if( params.node.rowPinned ){
             return false
           }
-          let cohortDischargedCasesToDate = 0
-          let columnRelativeDays = params.colDef.app.relativeDays
-
-          if( params.data.cohortAge < columnRelativeDays ){
-            return false
-          }
-
-          covid_cohort_app.cases.forEach( function( oneCase ){
-            // is case within cohort?
-            let isCaseWithinCohort = oneCase.parsed.caseCohort === params.data.cohort
-
-            // case discharged within days
-            let isCaseDischarged = ( Number.isFinite( oneCase.parsed.caseDischargeAfterDays ) && oneCase.parsed.caseDischargeAfterDays <= columnRelativeDays )
-
-            // is Case Discharged (otherwise discharge date is for death)
-            let isCaseAboutDischarged = oneCase.parsed.Status === 'Discharged'
-
-            if( isCaseWithinCohort && isCaseDischarged && isCaseAboutDischarged ){
-              cohortDischargedCasesToDate ++
-            }
-          } )
-
-          if( covid_cohort_app.tableValues === 'number' ){
-            return cohortDischargedCasesToDate
-          }else{
-            return 100 * cohortDischargedCasesToDate / params.data.count
-          }
+          return covid_cohort_app.cohortDataValueGetter( params )
         },
         valueFormatter: function( params ){
           if( params.value === false ){
