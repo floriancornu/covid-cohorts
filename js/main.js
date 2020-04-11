@@ -9,6 +9,7 @@ covid_cohort_app.data_url = 'https://services6.arcgis.com/LZwBmoXba0zrRap7/arcgi
 covid_cohort_app.data_url = 'https://floriancornu.github.io/covid-cohorts/data/20200404covid.txt' // Apr 4th
 covid_cohort_app.data_url = 'https://floriancornu.github.io/covid-cohorts/data/20200406-0738.txt' // Found April 6th
 
+covid_cohort_app.data_url = 'https://floriancornu.github.io/covid-cohorts/data/20200411@0907.txt' // Found April 6th
 
 
 // Pick the kind of numbers to show
