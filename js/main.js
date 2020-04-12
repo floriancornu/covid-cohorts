@@ -9,6 +9,7 @@ covid_cohort_app.data_url = 'https://services6.arcgis.com/LZwBmoXba0zrRap7/arcgi
 covid_cohort_app.data_url = 'https://floriancornu.github.io/covid-cohorts/data/20200404@2055.txt' // include dates of discharge
 // covid_cohort_app.data_url = 'https://floriancornu.github.io/covid-cohorts/data/20200406@0738.txt' // no date of discharge anymore
 covid_cohort_app.data_url = 'https://floriancornu.github.io/covid-cohorts/data/20200411@0907.txt' //
+covid_cohort_app.data_url = 'https://floriancornu.github.io/covid-cohorts/data/20200412@0849.txt' //
 
 
 // Pick the kind of numbers to show
