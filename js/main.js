@@ -11,6 +11,7 @@ covid_cohort_app.data_url = 'https://floriancornu.github.io/covid-cohorts/data/2
 covid_cohort_app.data_url = 'https://floriancornu.github.io/covid-cohorts/data/20200411@0907.txt' //
 covid_cohort_app.data_url = 'https://floriancornu.github.io/covid-cohorts/data/20200412@0849.txt' //
 covid_cohort_app.data_url = 'https://floriancornu.github.io/covid-cohorts/data/20200414@0718.txt' //
+covid_cohort_app.data_url = 'https://floriancornu.github.io/covid-cohorts/data/20200415@0907.txt' //
 
 
 // Pick the kind of numbers to show
