@@ -14,6 +14,16 @@ covid_cohort_app.data_url = 'https://floriancornu.github.io/covid-cohorts/data/2
 covid_cohort_app.data_url = 'https://floriancornu.github.io/covid-cohorts/data/20200415@0907.txt' //
 
 
+// https://services6.arcgis.com/LZwBmoXba0zrRap7/arcgis/rest/services/COVID_19_Prod_B_feature/FeatureServer/0/query?f=json&where=1%3D1&returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=*&orderByFields=Case_ID%20desc&resultOffset=0&resultRecordCount=10000&resultType=standard&cacheHint=true
+
+covid_cohort_app.data_urls = []
+// covid_cohort_app.data_urls.push( 'https://floriancornu.github.io/covid-cohorts/data/20200419-1.txt' )
+// covid_cohort_app.data_urls.push( 'https://floriancornu.github.io/covid-cohorts/data/20200419-2.txt' )
+// covid_cohort_app.data_urls.push( 'https://floriancornu.github.io/covid-cohorts/data/20200419-3.txt' )
+
+covid_cohort_app.data_urls.push( 'https://floriancornu.github.io/covid-cohorts/data/20200419-all.txt' )
+
+
 // Pick the kind of numbers to show
 covid_cohort_app.tableValues = 'pct'
 // covid_cohort_app.tableValues = 'number'
@@ -28,6 +38,46 @@ covid_cohort_app.options = {
 }
 
 // Load Data
+covid_cohort_app.readDataFromSeveralFiles = function(){
+  console.log( covid_cohort_app.data_urls )
+
+  covid_cohort_app.originData = []
+
+  let readingPromise = new Promise( function( resolve, reject ){
+    let readingPromises = []
+
+    covid_cohort_app.data_urls.forEach( function( oneUrl ){
+      readingPromises.push( covid_cohort_app.readOneFileFromBatch( oneUrl ) )
+    } )
+
+    Promise.all( readingPromises ).then( function( returned ){
+      console.log( 'all done' )
+      console.log( covid_cohort_app.originData )
+      resolve( true )
+    } )
+  } )
+
+  return readingPromise
+}
+
+covid_cohort_app.readOneFileFromBatch = function( url ){
+  console.log( 'reading', url )
+  return new Promise( function( resolve, reject ){
+    d3.json(url).then( function(data) {
+      console.log( 'read:', url )
+      let firstCase = data.features[0].attributes.Case_ID 
+      let lastCase = data.features[data.features.length-1].attributes.Case_ID 
+      console.log( 'cases:', firstCase, 'to ', lastCase )
+      covid_cohort_app.originData = covid_cohort_app.originData.concat( data.features )
+      resolve()
+    })
+  })
+}
+
+
+
+
+// Load Data from 1 file only
 covid_cohort_app.readData = function(){
   console.log( covid_cohort_app.data_url )
 
@@ -227,13 +277,13 @@ covid_cohort_app.setGridRows = function(){
   covid_cohort_app.calculateTotals()
   covid_cohort_app.gridOptions.api.setPinnedBottomRowData( [
     {
-      id: 'Total',
+      id: 'Total:',
       totalsToShow: [ 'count', 'resolved', 'Discharged', 'Deceased', 'Hospitalised' ],
       pctDenominator: 'count'
 
     },
     {
-      id: 'Resolved',
+      id: 'Of Resolved:',
       totalsToShow: [ 'resolved', 'Discharged', 'Deceased' ],
       pctDenominator: 'resolved'
     }
